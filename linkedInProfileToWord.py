@@ -98,7 +98,7 @@ def load_template():
 
 def export_to_word(profile, template_path):
     status_str.set("Exporting to Word...")
-    chosen_file = filedialog.asksaveasfile(mode='w', filetypes=[("Word files", ".docx")], defaultextension=".docx")
+    chosen_file = filedialog.asksaveasfile(mode='w', filetypes=[("Word files", ".docx")], defaultextension=".docx", initialfile=profile['basics']['name'])
     try:
         doc = DocxTemplate(template_path)
         if profile['basics']["image"]:
