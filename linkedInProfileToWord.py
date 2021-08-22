@@ -2,6 +2,7 @@ from linkedin_api import Linkedin
 from tkinter import *
 from tkinter import messagebox, ttk, filedialog, scrolledtext
 import os
+import sys
 import threading
 import json
 import urllib.request
