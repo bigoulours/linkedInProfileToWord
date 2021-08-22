@@ -59,11 +59,13 @@ def start_search(user, pwd, link):
         contact_info = api.get_profile_contact_info(public_id=public_id)
 
         # #debug
-        print(json.dumps(profile, indent=4))
+        # print(json.dumps(profile, indent=4))
         # print(json.dumps(skills, indent=4))
         # print(json.dumps(contact_info, indent=4))
 
         profile_to_export.update(linkedin_to_json_resume(profile, skills, contact_info))
+        #debug
+        print(json.dumps(profile_to_export, indent=4))
 
         text_profile_json.configure(state="normal")
         text_profile_json.insert(INSERT, json.dumps(profile_to_export, indent=4))
@@ -172,7 +174,7 @@ export_to_word_btn['command'] = lambda: export_to_word(profile_to_export, templa
 # Text Frame
 text_frame = Frame(top)
 text_frame.pack(padx=10, pady=10, side=TOP, fill="both", expand=True)
-text_profile_json = scrolledtext.ScrolledText(text_frame, bd=5)
+text_profile_json = scrolledtext.ScrolledText(text_frame, bd=5, font = ("Ubuntu", 12))
 text_profile_json.pack(side=LEFT, expand=True, fill="both")
 text_profile_json.configure(state="disabled")
 
