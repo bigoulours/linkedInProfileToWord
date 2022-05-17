@@ -4,7 +4,8 @@ from ttkbootstrap.scrolled import ScrolledText
 from ttkbootstrap.tooltip import ToolTip
 from tkinter import filedialog, messagebox
 import os
-import sys
+from pathlib import Path
+#import sys
 import threading
 import json
 import urllib.request
@@ -12,14 +13,16 @@ import configparser
 from docx.shared import Mm
 from lib.linkedinToJSONresume import linkedin_to_json_resume
 from docxtpl import DocxTemplate, InlineImage
-
+from CI.version import SW_VERSION
 
 config = configparser.ConfigParser()
 config.read("linkedInProfileToWord.ini")
 config_dict = {s:dict(config.items(s)) for s in config.sections()}
 
+program_name = Path(__file__).stem + "-" + SW_VERSION
+
 top = ttk.Window(themename=config_dict.get('General',{}).get('theme', 'cosmo'))
-top.title("Linkedin Search")
+top.title(program_name)
 top.geometry("800x680")
 try:
     top.iconbitmap("images/linkedin.ico")
@@ -50,9 +53,9 @@ def start_search(user, pwd, link):
             top.update()
             export_to_word_btn.configure(state="disabled")
         except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print("Error: " + repr(e) + " in " + str(fname) + " line " + str(exc_tb.tb_lineno) + "\n")
+            #exc_type, exc_obj, exc_tb = sys.exc_info()
+            #fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print("Error: " + repr(e)) #+ " in " + str(fname) + " line " + str(exc_tb.tb_lineno) + "\n")
             messagebox.showinfo("Error", "Login failed!\nCheck username and password.\n2FA must be disabled in LinkedIn settings.")
             return
 
@@ -77,9 +80,9 @@ def start_search(user, pwd, link):
         status_str.set("Done")
         top.update()
     except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("Error: " + repr(e)+ " in " + str(fname) + " line " + str(exc_tb.tb_lineno) + "\n")
+        #exc_type, exc_obj, exc_tb = sys.exc_info()
+        #fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("Error: " + repr(e)) #+ " in " + str(fname) + " line " + str(exc_tb.tb_lineno) + "\n")
         status_str.set("Something went wrong! Check console output for more details")
         return
 
@@ -118,9 +121,9 @@ def export_to_word(profile, template_path):
         os.remove("profile_pic_temp.jpg")
         status_str.set("Word file saved under " + chosen_file.name)
     except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("Error: " + repr(e)+ " in " + str(fname) + " line " + str(exc_tb.tb_lineno) + "\n")
+        #exc_type, exc_obj, exc_tb = sys.exc_info()
+        #fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("Error: " + repr(e)) #+ " in " + str(fname) + " line " + str(exc_tb.tb_lineno) + "\n")
         status_str.set("Word file could not be saved!")
 
 
