@@ -10,22 +10,41 @@ jobs:
     name: Windows x64
     runs-on: windows-2022
 
-    steps:  
+    steps:
+      - name: Get tag
+        id: tag
+        uses: dawidd6/action-get-tag@v1
+        with:
+          # Optionally strip `v` prefix
+          strip_v: false
+
       - name: Checkout repo
         uses: actions/checkout@v2
         with:
           submodules: recursive
+
+      - uses: bluwy/substitute-string-action@v1
+        id: sub
+        with:
+          _input-file: 'CI/version.py'
+          dev: ${{steps.tag.outputs.tag}}
+
+      - run: echo '${{ steps.sub.outputs.result }}' > .\CI\version.py
+
       - name: Install dependencies
         shell: cmd
         run: |
           python -m pip install -r requirements.txt
+
       - name: Compile
         shell: cmd
         run: |
           python build_exe.py
+
       - name: Package
         run: |
           xcopy /i /E dist package
+
       - uses: actions/upload-artifact@v2
         with:
           name: linkedInProfileToWord

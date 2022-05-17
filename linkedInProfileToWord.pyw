@@ -16,7 +16,7 @@ from docxtpl import DocxTemplate, InlineImage
 from CI.version import SW_VERSION
 
 config = configparser.ConfigParser()
-config.read("linkedInProfileToWord.ini")
+config.read(f"{Path(__file__).stem}.ini")
 config_dict = {s:dict(config.items(s)) for s in config.sections()}
 
 program_name = Path(__file__).stem + "-" + SW_VERSION
