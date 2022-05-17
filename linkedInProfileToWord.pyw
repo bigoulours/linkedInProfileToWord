@@ -1,27 +1,32 @@
 from linkedin_api import Linkedin
-from tkinter import *
-from tkinter import messagebox, ttk, filedialog, scrolledtext
+import ttkbootstrap as ttk
+from ttkbootstrap.scrolled import ScrolledText
+from ttkbootstrap.tooltip import ToolTip
+from tkinter import filedialog, messagebox
 import os
 import sys
 import threading
 import json
 import urllib.request
+import configparser
 from docx.shared import Mm
 from lib.linkedinToJSONresume import linkedin_to_json_resume
 from docxtpl import DocxTemplate, InlineImage
 
 
-top = Tk()
+config = configparser.ConfigParser()
+config.read("linkedInProfileToWord.ini")
+config_dict = {s:dict(config.items(s)) for s in config.sections()}
+
+top = ttk.Window(themename=config_dict.get('General',{}).get('theme', 'cosmo'))
 top.title("Linkedin Search")
-window_width = 800
-window_height = 680
-top.geometry(str(window_width) + "x" + str(window_height))
+top.geometry("800x680")
 try:
     top.iconbitmap("images/linkedin.ico")
 except:
     print("LinkedIn icon not found. Using default.")
-status_str = StringVar(value="Ready")
-template_path_str = StringVar(value="No template selected")
+status_str = ttk.StringVar(value="Ready")
+template_path_str = ttk.StringVar(value="No template selected")
 this_file_name = os.path.splitext(os.path.basename(__file__))[0]
 resource_path = os.path.join(os.path.dirname(__file__), 'resources')
 profile_to_export = dict()
@@ -32,17 +37,15 @@ def start_search(user, pwd, link):
         if not ("linkedin.com/in/" in link):
             status_str.set("Please enter a valid profile link!")
             return
-        text_profile_json.configure(state="normal")
-        text_profile_json.delete('1.0', END)
-        text_profile_json.configure(state="disabled")
+        text_profile_json._text.configure(state="normal")
+        text_profile_json.delete('1.0', 'end')
+        text_profile_json._text.configure(state="disabled")
         export_to_word_btn.configure(state="disabled")
         profile_to_export.clear()
         public_id = link.split('linkedin.com/in/')[-1].strip('/')
         # Authenticate using any Linkedin account credentials
         try:
             api = Linkedin(user, pwd)
-            with open(this_file_name + '_login', 'w') as f:
-                f.write(user)
             status_str.set("Login successful!")
             top.update()
             export_to_word_btn.configure(state="disabled")
@@ -67,9 +70,9 @@ def start_search(user, pwd, link):
         #debug
         print(json.dumps(profile_to_export, indent=4))
 
-        text_profile_json.configure(state="normal")
-        text_profile_json.insert(INSERT, json.dumps(profile_to_export, indent=4))
-        text_profile_json.configure(state="disabled")
+        text_profile_json._text.configure(state="normal")
+        text_profile_json.insert('insert', json.dumps(profile_to_export, indent=4))
+        text_profile_json._text.configure(state="disabled")
         export_to_word_btn.configure(state="normal")
         status_str.set("Done")
         top.update()
@@ -122,70 +125,68 @@ def export_to_word(profile, template_path):
 
 
 # Login frame
-login_frame = Frame(top)
+login_frame = ttk.Frame(top)
 login_frame.pack(padx=10, pady=5, expand=False, fill="x")
-label_usr = Label(login_frame, text="User")
-label_usr.pack(side=LEFT, expand=False)
-entry_usr = Entry(login_frame, bd=5)
-last_login = ''
-if os.path.isfile(this_file_name + '_login'):
-    with open(this_file_name + '_login') as f:
-        last_login = f.readlines()[0]
+label_usr = ttk.Label(login_frame, text="User")
+label_usr.pack(side='left', expand=False)
+ToolTip(label_usr, text="Your LinkedIn username\nPre-filled value can be changed in the .ini file")
+entry_usr = ttk.Entry(login_frame)
+last_login = config_dict.get('General',{}).get('user', '')
 entry_usr.insert(0, last_login)
-entry_usr.pack(side=LEFT, expand=True, fill="x")
-label_pwd = Label(login_frame, text="Pwd")
-label_pwd.pack(side=LEFT, expand=False)
-entry_pwd = Entry(login_frame, show="*", bd=5)
-entry_pwd.pack(side=LEFT, expand=True, fill="x")
+entry_usr.pack(side='left', expand=True, fill="x")
+label_pwd = ttk.Label(login_frame, text="Pwd")
+label_pwd.pack(side='left', expand=False)
+entry_pwd = ttk.Entry(login_frame, show="*")
+entry_pwd.pack(side='left', expand=True, fill="x")
 
 separator = ttk.Separator(top, orient='horizontal')
-separator.pack(side=TOP, pady=10, fill='x')
+separator.pack(side='top', pady=10, fill='x')
 
 # Search filters 1
-search_frame1 = Frame(top)
-search_frame1.pack(padx=10, pady=0, side=TOP, fill="x")
-label_profile_link = Label(search_frame1, text="Profile Link")
-label_profile_link.pack(side=LEFT, expand=False)
-entry_profile_link = Entry(search_frame1, bd=5)
-entry_profile_link.pack(side=LEFT, expand=True, fill="x")
+search_frame1 = ttk.Frame(top)
+search_frame1.pack(padx=10, pady=0, side='top', fill="x")
+label_profile_link = ttk.Label(search_frame1, text="Profile Link")
+label_profile_link.pack(side='left', expand=False)
+entry_profile_link = ttk.Entry(search_frame1)
+entry_profile_link.pack(side='left', expand=True, fill="x")
 
 # Buttons frame
-btn_frame = Frame(top)
-btn_frame.pack(padx=10, pady=0, side=TOP, fill="x")
+btn_frame = ttk.Frame(top)
+btn_frame.pack(padx=10, pady=0, side='top', fill="x")
 
-start_search_btn = Button(btn_frame, text="Get JSON")
-start_search_btn.pack(side=LEFT, fill="none", expand=False)
+start_search_btn = ttk.Button(btn_frame, text="Get JSON")
+start_search_btn.pack(side='left', fill="none", expand=False)
 start_search_btn['command'] = lambda: create_start_search_thread(entry_usr.get(), entry_pwd.get(), entry_profile_link.get())
 
-btn_sub_frame = Frame(btn_frame)
-btn_sub_frame.pack(side=LEFT, fill="none", expand=True)
-label_place_holder = Label(btn_sub_frame, text="")
-label_place_holder.pack(side=TOP)
-select_template_btn = Button(btn_sub_frame, text="Load template")
-select_template_btn.pack(side=TOP, fill="none", expand=False)
+btn_sub_frame = ttk.Frame(btn_frame)
+btn_sub_frame.pack(side='left', fill="none", expand=True)
+label_place_holder = ttk.Label(btn_sub_frame, text="")
+label_place_holder.pack(side='top')
+select_template_btn = ttk.Button(btn_sub_frame, text="Load template")
+select_template_btn.pack(side='top', fill="none", expand=False)
 select_template_btn['command'] = lambda: load_template()
-label_template = Label(btn_sub_frame, textvariable=template_path_str)
-label_template.pack(side=TOP, fill="x", expand=True)
+label_template = ttk.Label(btn_sub_frame, textvariable=template_path_str)
+label_template.pack(side='top', fill="x", expand=True)
 
-export_to_word_btn = Button(btn_frame, text="Export to Word", state="disabled")
-export_to_word_btn.pack(side=RIGHT, fill="none", expand=False)
+export_to_word_btn = ttk.Button(btn_frame, text="Export to Word", state="disabled")
+export_to_word_btn.pack(side='right', fill="none", expand=False)
 export_to_word_btn['command'] = lambda: export_to_word(profile_to_export, template_path_str.get())
 
 # Text Frame
-text_frame = Frame(top)
-text_frame.pack(padx=10, pady=10, side=TOP, fill="both", expand=True)
-text_profile_json = scrolledtext.ScrolledText(text_frame, bd=5, font = ("Ubuntu", 12))
-text_profile_json.pack(side=LEFT, expand=True, fill="both")
-text_profile_json.configure(state="disabled")
+text_frame = ttk.Frame(top)
+text_frame.pack(padx=10, pady=10, side='top', fill="both", expand=True)
+text_profile_json = ScrolledText(text_frame, font = ("Ubuntu", 12))
+text_profile_json.pack(side='left', expand=True, fill="both")
+text_profile_json._text.configure(state="disabled")
 
 # Status frame
-status_frame = Frame(top)
-status_frame.pack(padx=10, pady=2, side=BOTTOM, expand=False, fill="x")
-label_status = Label(status_frame, textvariable=status_str)
-label_status.pack(side=LEFT, fill="x")
+status_frame = ttk.Frame(top)
+status_frame.pack(padx=10, pady=2, side='bottom', expand=False, fill="x")
+label_status = ttk.Label(status_frame, textvariable=status_str)
+label_status.pack(side='left', fill="x")
 
 separator = ttk.Separator(top, orient='horizontal')
-separator.pack(side=BOTTOM, fill='x')
+separator.pack(side='bottom', fill='x')
 
 top.mainloop()
 
